@@ -1,0 +1,205 @@
+<html>
+
+<head>
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const COLS = 10;
+        const ROWS = 10;
+        const operations = [
+            [0, 1],
+            [0, -1],
+            [1, -1],
+            [-1, 1],
+            [1, 1],
+            [-1, -1],
+            [1, 0],
+            [-1, 0]
+        ];
+        const blockStyles = {
+            height: 30,
+            width: 30,
+            border: "1px solid #111111",
+        }
+        const gridStyles = {
+            display: "grid",
+            gridTemplateColumns: `repeat(${COLS}, ${blockStyles.height + 1}px)`,
+        }
+        const generateGrid = (type = "empty") => {
+
+            const grid = Array.from(Array(ROWS), () => type === "random" ? Math.round(Math.random()) : 0)
+                .map((_, i) => Array.from(Array(COLS), () => type === "random" ? Math.round(Math.random()) : 0))
+
+            return grid;
+        }
+        const Grid = () => {
+            const [grid, setGrid] = React.useState(() => generateGrid("random"));
+            const [speed, setSpeed] = React.useState(5);
+            const [rounded, setRounded] = React.useState(false);
+            const [running, setRunning] = React.useState(false);
+
+            const runningRef = React.useRef(running);
+            const speedRef = React.useRef(speed);
+
+            runningRef.current = running;
+            speedRef.current = speed;
+
+            const runSimulation = React.useCallback(() => {
+                if (!runningRef.current) return;
+
+                setGrid(oldGrid => {
+                    const newGrid = oldGrid.map((oldRow, i) => {
+                        let newRow = oldRow.map((val, j) => {
+                            let neighbors = 0;
+                            operations.forEach(([x, y]) => {
+                                const newI = i + x;
+                                const newJ = j + y;
+                                if (newI >= 0 && newI < ROWS && newJ >= 0 && newJ < COLS) {
+                                    neighbors += oldGrid[newI][newJ];
+                                }
+                            })
+                            if (neighbors < 2 || neighbors > 3) {
+                                return 0;
+                            } else if (oldGrid[i][j] === 0 && neighbors === 3) {
+                                return 1;
+                            } else return val;
+                        });
+                        return newRow;
+                    });
+
+                    if (newGrid.toString() === oldGrid.toString()) {
+                        setRunning(false);
+                    }
+
+                    return newGrid;
+                });
+
+                setTimeout(runSimulation, 1000 / speedRef.current);
+            }, [speedRef]);
+
+            return (
+                <div className="container">
+                    <div className="controls">
+                        <button
+                            onClick={() => {
+                                setRunning(!running);
+                                if (!running) {
+                                    runningRef.current = true;
+                                    runSimulation();
+                                }
+                            }}
+                        >
+                            {running ? "Stop" : "Start"}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setRunning(false);
+                                setGrid(generateGrid());
+                            }}
+                            style={{margin: "0 5px"}}
+                        >
+                            Clear
+                        </button>
+                        <button
+                            onClick={() => {
+                                setRunning(false);
+                                setGrid(generateGrid("random"));
+                            }}>
+                            Fill Random
+                    </button>
+                    </div>
+                    <div className="controls">
+                        <div>
+                            <label htmlFor="rounded">Rounded</label>
+                            <input type="checkbox" name="rounded" id="rounded" onChange={(e) => setRounded(e.target.checked)} />
+                        </div>
+                        <div>
+                            <label htmlFor="speed">Speed</label>
+                            <br />
+                            <input
+                                type="range"
+                                value={speed}
+                                name="speed"
+                                id="speed"
+                                min="1"
+                                max="10"
+                                onChange={(e) => {
+                                    setSpeed(e.target.value)
+                                }} />
+                        </div>
+                    </div>
+                    <div style={gridStyles}>
+                        {
+                            grid.map((row, i) =>
+                                row.map((val, j) =>
+                                    <div
+                                        key={Math.random()} onClick={
+                                            () => {
+                                                const newGrid = [...grid];
+                                                newGrid[i][j] = grid[i][j] ? 0 : 1;
+                                                setGrid(newGrid);
+                                            }}
+                                        style={{
+                                            ...blockStyles,
+                                            backgroundColor: val === 1 ? "#111111" : "white",
+                                            borderRadius: rounded && "100%",
+                                        }}>
+                                    </div>
+                                )
+                            )
+                        }
+                    </div >
+                </div>
+            )
+        }
+        ReactDOM.render(<Grid />, document.getElementById("root"));
+    </script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            width: 310px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            /* justify-content: space-between; */
+            align-items: center;
+        }
+
+        .controls>* {
+            flex: 1;
+        }
+
+        input[type=range] {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Conway's Game of Life</h1>
+    <div id="root"></div>
+    <span style="padding-top: 20px;">
+        Made by
+        <a href="https://github.com/abhijit-hota">Abhijit Hota</a>
+        <br>
+        More info: <a href="https://github.com/abhijit-hota/game-of-life">GitHub Repo</a>
+    </span>
+</body>
+
+</html>
