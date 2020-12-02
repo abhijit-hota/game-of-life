@@ -11,3 +11,9 @@
 Ben Awad's video: [React Hooks Project Tutorial - Game of Life](https://www.youtube.com/watch?v=DvVt11mPuM0) (I used vanilla JS with React)
 
 Single File idea from this blog post by Kent C Dodds: [Super Simple Start to React](https://kentcdodds.com/blog/super-simple-start-to-react)
+
+## Known flaws
+
+-   You shouldn't make apps like this.
+-   The method is probably the opposite of optimization.
+-   Live cells don't "cross" the boundary. Rather, they just stop violating the rule of "infinity grid".
