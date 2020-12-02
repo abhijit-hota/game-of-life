@@ -16,4 +16,4 @@ Single File idea from this blog post by Kent C Dodds: [Super Simple Start to Rea
 
 -   You shouldn't make apps like this.
 -   The method is probably the opposite of optimization.
--   Live cells don't "cross" the boundary. Rather, they just stop violating the rule of "infinity grid".
+-   Live cells don't "cross" the boundary. Rather, they just stop; hence violating the rule of "infinite grid".
